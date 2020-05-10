@@ -25,11 +25,6 @@ button:focus{
     transition: all ease-in-out .4s;
     cursor: pointer;
 }
-
-.hidden{
-    visibility: hidden;
-}
-
 .btn-cart:hover{
     background-color: transparent;
     border-color: #fafafa;
@@ -63,6 +58,17 @@ p {
     overflow: hidden;
     margin: 20px 0;
 }
+
+.image {
+    width: 200px;
+    height: 200px;
+}
+
+.image-small {
+    width: 100px;
+    height: 80px;
+}
+
 img {
     max-width: 100%;
     height: auto
