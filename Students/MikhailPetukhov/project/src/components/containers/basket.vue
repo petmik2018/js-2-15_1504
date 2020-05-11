@@ -35,21 +35,49 @@
         methods: {
             add(item) {
                 let find = this.items.find (product => product.id == item.id);
-                if (find) {
-                    find.quantity++;
+                if (find) {                    
+                    this.$parent.put(this.url + `/${find.id}`, { amount: 1 })
+                    .then(res => {
+                        if (res.status) {
+                            find.quantity++;
+                        } else {
+                            console.log('error increase item');
+                        }
+                    });
+
                 } else {
-                    let newBasketItem = Object.assign({}, item, {quantity: 1});
-                    this.items.push(newBasketItem);                    
-                } 
-                this.$parent.post('/api/basket/add', item);             
+                    let newItem = Object.assign({}, item, {quantity: 1});
+                    this.$parent.post(this.url, newItem)
+                    .then(res => {
+                        if (res.status) {
+                            this.items.push(newItem); 
+                        } else {
+                            console.log('error add new item');
+                        }
+                    });                                       
+                }            
             },
             remove(item) {
                 if (item.quantity > 1) {
-                    item.quantity--;
+                    this.$parent.put(this.url + `/${find.id}`, { amount: -1 })
+                    .then(res => {
+                        if (res.status) {
+                            find.quantity--;
+                        } else {
+                            console.log('error decrease item');
+                        }
+                    });
+
                 } else {
-                    this.items.splice (this.items.indexOf(item), 1);                    
+                    this.$parent.delete(this.url + `/${item.id}`)
+                    .then(res => {
+                        if (res.status) {
+                            this.items.splice(this.items.indexOf(item), 1); 
+                        } else {
+                            console.log('error remove item');
+                        }
+                    });                                       
                 }
-                this.$parent.post('/api/basket/remove', item);
             }
         },
         mounted() {

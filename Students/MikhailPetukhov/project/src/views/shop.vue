@@ -40,7 +40,26 @@
                     body: JSON.stringify(item)
                 })
                 .then(response => response.json())
-            },      
+            },
+            delete(url) {
+                return fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
+                .then(res => res.json())
+            }, 
+            put(url, item) {
+                return fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(item)
+                })
+                .then(res => res.json())
+            },
             addToBasket(item) {
                 this.$refs.basket.add(item);
             },

@@ -1,5 +1,8 @@
 let express = require('express');
 let fs = require('fs');
+let writer = require('./utils/writer.js');
+let catalog = require('./services/catalog.js');
+let basket = require('./services/basket.js');
 
 let server = express();
 
@@ -28,20 +31,14 @@ server.get('/basket', (request, response) => {
 
 server.post('/catalog', (req, res) => {
     fs.readFile('./server/db/catalog.json', 'utf-8', (err, data) => {
-        if(!err) {
-            let dataCatalog = JSON.parse(data);
-
-            let newItem = req.body;
-            newItem.id = Date.now();
-            dataCatalog.push(newItem);
-
-            fs.writeFile('./server/db/catalog.json', JSON.stringify(dataCatalog, null, ' '), err => {
-                if(!err) {
-                    res.json({ id: newItem.id });
-                } else {
-                    console.log(err);
-                }
-            })
+        if(!err) {        	
+            let { newCatalog, id } = catalog.add(req.body, JSON.parse(data));
+            writer('./server/db/catalog.json', JSON.stringify(newCatalog, null, ' '))
+	            .then(report => {
+	            	if (report) {
+	            		res.json({ id: id });
+	            	}
+	            });
         }
     })
 });
@@ -50,7 +47,7 @@ server.post('/basket/add', (req, res) => {
     fs.readFile('./server/db/basket.json', 'utf-8', (err, data) => {
         if(!err) {
             let dataBasket = JSON.parse(data);
-            let search = req.body;
+            let search = JSON.parse(JSON.stringify(req.body));
             let find = dataBasket.find (product => product.id == search.id);
 
             if (find) {
@@ -88,6 +85,30 @@ server.post('/basket/remove', (req, res) => {
         }
     })
 });
+
+server.post('/basket', (req, res) => {
+	//добавление нового товара
+    fs.readFile('./server/db/basket.json', 'utf-8', (err, data) => {
+        if(!err) {        	
+            let newBasket = basket.add(req.body, JSON.parse(data));
+            writer('./server/db/basket.json', JSON.stringify(newBasket, null, ' '))
+	            .then(report => {
+	            	if (report) {
+	            		res.json({ status: 1 });
+	            	}
+	            });
+        }
+    })
+});
+
+server.delete('/basket/:id', (req, res) => {
+	//удаление товара
+});
+
+server.put('/basket/:id', (req, res) => {
+	//Изменение количества товара
+});
+
 
 server.listen(3000, () => {
 	console.log("Server runs at 3000...");
