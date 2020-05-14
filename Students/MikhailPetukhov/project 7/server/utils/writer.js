@@ -2,10 +2,14 @@ let fs = require('fs');
 
 module.exports = async function(file, data) {
 	try {
-		await fs.writeFile(file, data, err => { console.log(err) });
+		await fs.writeFile(file, data, err => {
+			if (err) {
+				console.log(err)
+			}
+		});
 		return true;
 	}
-	catch () {
+	catch {
 		return false;
 	}
 }

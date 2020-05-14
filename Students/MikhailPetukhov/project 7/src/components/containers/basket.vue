@@ -59,10 +59,10 @@
             },
             remove(item) {
                 if (item.quantity > 1) {
-                    this.$parent.put(this.url + `/${find.id}`, { amount: -1 })
+                    this.$parent.put(this.url + `/${item.id}`, { amount: -1 })
                     .then(res => {
                         if (res.status) {
-                            find.quantity--;
+                            item.quantity--;
                         } else {
                             console.log('error decrease item');
                         }

@@ -3,6 +3,6 @@ module.exports = {
 		let newObject = JSON.parse(JSON.stringify(item));
         newObject.id = Date.now();
         array.push(newObject);
-        return { catalog: array, newId: newObject.id };
+        return { newCatalog: array, newId: newObject.id };
 	}
 };

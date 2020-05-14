@@ -3,7 +3,7 @@ let fs = require('fs');
 let writer = require('./utils/writer.js');
 let catalog = require('./services/catalog.js');
 let basket = require('./services/basket.js');
-
+let logger = require('./utils/logger.js');
 let server = express();
 
 server.use(express.json());
@@ -22,6 +22,7 @@ server.get('/catalog', (request, response) => {
 });
 
 server.get('/basket', (request, response) => {
+
 	fs.readFile('./server/db/basket.json', 'utf-8', (err, data) => {
 		if (!err) {
 			response.send(data);
@@ -43,70 +44,53 @@ server.post('/catalog', (req, res) => {
     })
 });
 
-server.post('/basket/add', (req, res) => {
-    fs.readFile('./server/db/basket.json', 'utf-8', (err, data) => {
-        if(!err) {
-            let dataBasket = JSON.parse(data);
-            let search = JSON.parse(JSON.stringify(req.body));
-            let find = dataBasket.find (product => product.id == search.id);
-
-            if (find) {
-				find.quantity++;
-            } else {
-	            search.quantity = 1;
-	            dataBasket.push(search);
-            }         
-            fs.writeFile('./server/db/basket.json', JSON.stringify(dataBasket, null, ' '), err => {
-                if(err) {
-                    console.log(err);
-                }
-            })
-        }
-    })
-});
-
-server.post('/basket/remove', (req, res) => {
-    fs.readFile('./server/db/basket.json', 'utf-8', (err, data) => {
-        if(!err) {
-            let dataBasket = JSON.parse(data);
-            let search = req.body;
-            let find = dataBasket.find (product => product.id == search.id);
-            
-            if (find.quantity > 1) {
-					find.quantity--;
-                } else {
-					dataBasket.splice (dataBasket.indexOf(find), 1);
-                }            
-            fs.writeFile('./server/db/basket.json', JSON.stringify(dataBasket, null, ' '), err => {
-                if(err) {
-                    console.log(err);
-                }
-            })
-        }
-    })
-});
 
 server.post('/basket', (req, res) => {
 	//добавление нового товара
     fs.readFile('./server/db/basket.json', 'utf-8', (err, data) => {
         if(!err) {        	
-            let newBasket = basket.add(req.body, JSON.parse(data));
+            let  { newBasket, itemName } = basket.add(req.body, JSON.parse(data));
             writer('./server/db/basket.json', JSON.stringify(newBasket, null, ' '))
 	            .then(report => {
 	            	if (report) {
+	            		logger('add', itemName);
 	            		res.json({ status: 1 });
 	            	}
 	            });
         }
-    })
+    });
 });
 
 server.delete('/basket/:id', (req, res) => {
 	//удаление товара
+    fs.readFile('./server/db/basket.json', 'utf-8', (err, data) => {
+        if(!err) {        	
+            let  { newBasket, itemName } = basket.delete(req.params.id, JSON.parse(data));
+            writer('./server/db/basket.json', JSON.stringify(newBasket, null, ' '))
+	            .then(report => {
+	            	if (report) {
+	            		logger('delete', itemName);
+	            		res.json({ status: 1 });
+	            	}
+	            });
+        }
+    });
 });
 
 server.put('/basket/:id', (req, res) => {
 	//Изменение количества товара
+    fs.readFile('./server/db/basket.json', 'utf-8', (err, data) => {
+        if(!err) {    
+            let { newBasket, itemName, actionName } = basket.change(req.params.id, JSON.parse(data), req.body.amount);
+            writer('./server/db/basket.json', JSON.stringify(newBasket, null, ' '))
+	            .then(report => {
+	            	if (report) {
+	            		logger(actionName, itemName);
+	            		res.json({ status: 1 });
+	            	}
+	            });
+        }
+    });
 });
 
 
